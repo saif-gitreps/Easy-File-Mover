@@ -3,29 +3,38 @@ import shutil
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from datetime import datetime
+
+DEFAULT_HISTORY_FILE = r"C:\Users\saif\OneDrive\Desktop\moved-file-history.txt"
+DEFAULT_SOURCE_DIR = r"C:\Users\saif\Downloads"
+DEFAULT_DEST_DIR = r"D:\downloaded_files"
 
 def move_files(source_dir, dest_dir):
-    """
-    Move all files from the source directory to the destination directory
-    without creating any subdirectories.
-    """
     try:
         # Create the destination directory if it doesn't exist
         Path(dest_dir).mkdir(parents=True, exist_ok=True)
 
-        # Iterate over all files in the source directory
+        history = []
         for item in os.listdir(source_dir):
             source_path = os.path.join(source_dir, item)
+            dest_path = os.path.join(dest_dir, item)
+            
+            # Recording the move history
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            history.append(f"{timestamp}: Moved '{str(item)}' from '{source_path}' to '{dest_path}'")
+            
+            shutil.move(source_path, dest_path)
+            print(f"Moved {source_path} to {dest_path}")
 
-            if os.path.isfile(source_path):
-                # Move the file to the destination directory
-                dest_path = os.path.join(dest_dir, item)
-                shutil.move(source_path, dest_path)
-                print(f"Moved {source_path} to {dest_path}")
-
-        messagebox.showinfo("Success", "Files moved successfully.")
+        # documenting the move history in txt file
+        with open(DEFAULT_HISTORY_FILE, 'a') as file:
+            for entry in history:
+                file.write(entry + '\n')
+                file.write('\n')
+                
+        messagebox.showinfo("Success", "Items moved successfully.")
     except Exception as e:
-        messagebox.showerror("Error", f"Error moving files: {e}")
+        messagebox.showerror("Error", f"Error moving items: {e}")
 
 def select_source_dir():
     source_dir = filedialog.askdirectory()
@@ -49,11 +58,10 @@ def start_moving():
         
 def move_default():
     source_entry.delete(0, tk.END)
-    source_entry.insert(0, "C:/Saif/Downloads")
+    source_entry.insert(0, DEFAULT_SOURCE_DIR)
     
     dest_entry.delete(0, tk.END)
-    dest_entry.insert(0, "D:/downloaded_files")
-
+    dest_entry.insert(0, DEFAULT_DEST_DIR)
 
 root = tk.Tk()
 root.title("File Mover Organizer")
